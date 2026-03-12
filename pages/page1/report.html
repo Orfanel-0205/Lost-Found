@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Item – UNI FIND</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="../page1/assets/css/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="../../index.html" class="nav-brand">
+      <img src="../page1/assets/img/asan_kaya__1_-removebg-preview.png" class="nav-logo-img" alt="UNIFIND Logo">
+      <span>UNI<span>FIND</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="../../index.html" class="nav-link"><i class="fa-solid fa-house"></i> Home</a>
+      <a href="../page1/report.html" class="nav-link active"><i class="fa-solid fa-file-circle-exclamation"></i> Report</a>
+      <a href="../page2/claim.html" class="nav-link"><i class="fa-solid fa-hand-holding-heart"></i> Claim</a>
+      <a href="../page3/dashboard.html" class="nav-link"><i class="fa-solid fa-chart-column"></i> Dashboard</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="report-layout">
+
+      <div>
+
+        <div class="report-type-selector">
+
+          <div class="type-card found-card active" id="reportFound" onclick="selectType('found')">
+            <div class="active-pill">Selected ✓</div>
+            <img src="../page1/assets/img/reportfounditem-removebg-preview.png" class="type-card-img" alt="Found Item">
+            <div class="type-card-body">
+              <div class="type-name">Report a Found Item</div>
+              <p class="type-desc">You found a lost item and want to report it.</p>
+            </div>
+          </div>
+
+          <div class="type-card lost-card" id="reportLost" onclick="selectType('lost')">
+            <div class="active-pill">Selected ✓</div>
+            <img src="../page1/assets/img/asan_kaya__2_-removebg-preview.png" class="type-card-img" alt="Lost Item">
+            <div class="type-card-body">
+              <div class="type-name">Report a Lost Item</div>
+              <p class="type-desc">You lost an item and want to see if it's found.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="subtype-panel found-panel visible" id="foundSubtype">
+          <div class="subtype-panel-title">
+            <i class="fa-solid fa-magnifying-glass"></i> What kind of item did you find?
+          </div>
+          <div class="subtype-chips">
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-id-card"></i> ID / Card</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-mobile-screen"></i> Phone / Gadget</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-wallet"></i> Wallet / Bag</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-key"></i> Keys</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-calculator"></i> Calculator</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-shirt"></i> Clothing</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-book"></i> Books / Notes</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-umbrella"></i> Umbrella</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-gem"></i> Jewelry</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-box"></i> Other</div>
+          </div>
+        </div>
+
+        <div class="subtype-panel lost-panel" id="lostSubtype">
+          <div class="subtype-panel-title">
+            <i class="fa-solid fa-triangle-exclamation"></i> What kind of item did you lose?
+          </div>
+          <div class="subtype-chips">
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-id-card"></i> ID / Card</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-mobile-screen"></i> Phone / Gadget</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-wallet"></i> Wallet / Bag</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-key"></i> Keys</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-calculator"></i> Calculator</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-shirt"></i> Clothing</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-book"></i> Books / Notes</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-umbrella"></i> Umbrella</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-gem"></i> Jewelry</div>
+            <div class="subtype-chip" onclick="toggleChip(this)"><i class="fa-solid fa-box"></i> Other</div>
+          </div>
+        </div>
+
+        <div class="card" id="reportForm">
+          <div class="card-header">
+            
+            <h3>Item Details</h3>
+          </div>
+          <div class="card-body">
+
+            <input type="hidden" id="itemType">
+
+            <div class="form-group">
+              <label>Item Name <span class="required">*</span></label>
+              <input type="text" id="itemName" placeholder="e.g. Black Wallet, Samsung Phone">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Color / Appearance</label>
+                <input type="text" id="itemColor" placeholder="e.g. Black, Red with white strap">
+              </div>
+              <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" id="itemQuantity" value="1" min="1" placeholder="1">
+              </div>
+            </div>
+
+            <div class="section-divider">
+              <span id="locationSectionLabel">Where &amp; When Found</span>
+            </div>
+
+            <div class="form-row thirds">
+              <div class="form-group">
+                <label>
+                  <i class="fa-solid fa-location-dot" style="color:var(--green);font-size:0.8rem"></i>
+                  Location <span class="field-tag" id="locationTag">Found</span>
+                </label>
+                <input type="text" id="itemLocation" placeholder="e.g. Room 1103, Near Canteen, 2nd Floor">
+              </div>
+              <div class="form-group">
+                <label>
+                  <i class="fa-solid fa-calendar" style="color:var(--green);font-size:0.8rem"></i>
+                  Date <span class="field-tag" id="dateTag">Found</span>
+                </label>
+                <input type="date" id="itemDate">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="itemDescription" placeholder="Describe the item in detail – any distinctive marks, contents, brand, etc."></textarea>
+            </div>
+
+            <div class="section-divider"><span>Photo Evidence</span></div>
+
+            <div class="form-group">
+              <label>
+                Upload Photos
+                <span style="color:var(--text3);font-weight:400">(optional)</span>
+              </label>
+              <div
+                class="file-upload-area"
+                id="dropZone"
+                onclick="document.getElementById('imageInput').click()"
+                ondragover="handleDragOver(event)"
+                ondragleave="handleDragLeave(event)"
+                ondrop="handleDrop(event)">
+                <input type="file" id="imageInput" accept="image/*" multiple onchange="handleFiles(this.files)">
+                <div class="upload-icon-wrap">
+                  <i class="fa-solid fa-upload"></i>
+                </div>
+                <p class="upload-label">Click to upload or <span>browse files</span></p>
+                <p class="upload-hint">Max 5 images · 5MB each · JPG, PNG, WEBP</p>
+              </div>
+              <div class="preview-grid" id="previewImages"></div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-secondary" onclick="window.location='../../index.html'">
+                <i class="fa-solid fa-xmark"></i> Cancel
+              </button>
+              <button class="btn btn-primary" id="submitBtn" onclick="submitReport()">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span id="submitBtnText">Submit Report</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="card success-state" id="successState">
+          <div class="success-icon">🎉</div>
+          <h3>Report Submitted!</h3>
+          <p>Your item report has been successfully submitted. Staff will review and publish it shortly.</p>
+          <div style="display:flex;gap:12px;margin-top:8px">
+            <a href="../../index.html" class="btn btn-secondary">View All Items</a>
+            <a href="report.html" class="btn btn-primary" onclick="location.reload()">Report Another</a>
+          </div>
+        </div>
+
+      </div>
+
+      <div>
+
+        <div class="sidebar-card">
+          <h4>📌 Filing Guidelines</h4>
+          <div class="tip-item">
+            <img src="../page1/assets/img/asan_kaya__3_-removebg-preview.png" class="tip-img" alt="">
+            <span class="tip-text">Provide as much detail as possible – color, brand, distinguishing marks.</span>
+          </div>
+          <div class="tip-item">
+            <img src="../page1/assets/img/asan_kaya__4_-removebg-preview.png" class="tip-img" alt="">
+            <span class="tip-text">Upload a clear photo to help identify the item quickly.</span>
+          </div>
+          <div class="tip-item">
+            <img src="../page1/assets/img/asan_kaya__5_-removebg-preview.png" class="tip-img" alt="">
+            <span class="tip-text">Specify the exact location where the item was found or last seen.</span>
+          </div>
+          <div class="tip-item" style="margin-bottom:0">
+            <img src="../page1/assets/img/asan_kaya__6_-removebg-preview.png" class="tip-img" alt="">
+            <span class="tip-text">Include the correct date of finding or losing the item.</span>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <h4>📦 Item Lifecycle</h4>
+          <div class="lifecycle-item">
+            <span class="badge badge-found">Found</span>
+            <span class="lifecycle-desc">Reported and awaiting claim</span>
+          </div>
+          <div class="lifecycle-item">
+            <span class="badge badge-claimed">Claimed</span>
+            <span class="lifecycle-desc">Claim submitted, pending review</span>
+          </div>
+          <div class="lifecycle-item">
+            <span class="badge badge-returned">Returned</span>
+            <span class="lifecycle-desc">Item successfully returned</span>
+          </div>
+        </div>
+
+        <div class="sidebar-card" style="background:linear-gradient(135deg,#17391e,#205e31);border-color:rgba(200,150,12,0.3)">
+          <h4 style="color:#fff">Privacy Notice</h4>
+          <p style="font-size:0.82rem;color:rgba(255,255,255,0.72);line-height:1.6">
+            Your contact details are only shared with the authorized item owner after staff verification.
+            Wait until your report is reviewed by an authorized personnel.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="../page1/assets/js/scripts.js"></script>
+</body>
+</html>

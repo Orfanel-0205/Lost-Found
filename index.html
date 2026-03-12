@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home – FEU Lost & Found</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <div class="page-wrapper">
+    <nav class="navbar">
+      <a href="./index.html" class="nav-brand">
+        <img src="./assets/img/asan_kaya__1_-removebg-preview.png" alt="UNIFIND Header Logo" class="header-logo">
+        <span>UNI<span>FIND</span></span>
+      </a>
+
+      <div class="nav-actions">
+        <button class="menu-toggle" id="menuToggle" aria-label="Open Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div class="nav-links" id="navLinks">
+          <a href="./index.html" class="nav-link active">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
+          </a>
+
+          <a href="./pages/page1/report.html" class="nav-link">
+            <i class="fa-solid fa-file-circle-plus"></i>
+            <span>Report</span>
+          </a>
+
+          <a href="./pages/page2/claim.html" class="nav-link">
+            <i class="fa-solid fa-hand-holding-heart"></i>
+            <span>Claim</span>
+          </a>
+
+          <a href="./pages/page3/dashboard.html" class="nav-link">
+            <i class="fa-solid fa-chart-column"></i>
+            <span>Dashboard</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-left">
+          <div class="hero-logo-card">
+            <img src="./assets/img/logo2-lf-removebg-preview.png" alt="UNIFIND Home Logo" class="hero-logo">
+            <div class="hero-logo-caption">
+              <h3>UNIFIND</h3>
+              <p>Track and trace your belongings</p>
+            </div>
+          </div>
+
+          <div class="hero-text">
+            <p class="hero-kicker">FEU Tech Lost and Found Portal</p>
+            <h1 class="hero-title">Track and recover your <span>belongings</span> with ease</h1>
+            <p class="hero-description">
+              Browse all reported lost and found items from the FEU Tech community in one organized and easy-to-use space.
+            </p>
+
+            <div class="hero-actions">
+              <a href="./pages/page1/report.html" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i>
+                <span>Report an Item</span>
+              </a>
+
+              <a href="#itemsGrid" class="btn btn-secondary">
+                <i class="fa-solid fa-box-open"></i>
+                <span>Browse Items</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="search-wrap">
+      <div class="search-bar">
+        <div class="search-inner">
+          <div class="search-field">
+            <input type="text" id="searchInput" placeholder="Search by item name, color, location, or description">
+          </div>
+
+          <div class="filter-group">
+            <select id="typeFilter">
+              <option value="">All Types</option>
+              <option value="found">Found Items</option>
+              <option value="lost">Lost Items</option>
+            </select>
+
+            <select id="statusFilter">
+              <option value="">All Statuses</option>
+              <option value="found">Found</option>
+              <option value="lost">Lost</option>
+              <option value="claimed">Claimed</option>
+              <option value="returned">Returned</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <main class="container">
+      <div class="results-header">
+        <p class="results-count"><strong id="itemCount">0</strong> items found</p>
+      </div>
+
+      <div id="itemsGrid" class="items-grid"></div>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal detail-modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Item Details</h3>
+        <button class="close-btn" id="closeModalBtn">✕</button>
+      </div>
+
+      <div id="modalMainImg" class="main-img">📦</div>
+      <div id="modalImages" class="detail-images"></div>
+      <div id="modalBadge"></div>
+
+      <div class="modal-body-space">
+        <div class="detail-grid" id="modalDetails"></div>
+        <div id="modalDescription"></div>
+      </div>
+
+      <div id="claimSection"></div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="./js/utils.js"></script>
+  <script src="./js/home.js"></script>
+</body>
+</html>
