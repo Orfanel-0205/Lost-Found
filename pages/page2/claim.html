@@ -119,39 +119,10 @@
     </div>
   </div>
 
-  <!-- TOAST -->
+
   <div class="toast-container" id="toastContainer"></div>
 
   <script src="../../page2/assets/js/scripts.js"></script>
-  <script src="/js/claim.js"></script>
 
-  <script>
-    function filterClaims(status, button) {
-      const cards = document.querySelectorAll('.claim-card');
-      const tabs = document.querySelectorAll('.section-tab');
-
-      tabs.forEach(tab => tab.classList.remove('active'));
-      button.classList.add('active');
-
-      cards.forEach(card => {
-        if (status === 'all' || card.dataset.status === status) {
-          card.style.display = 'grid';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-    }
-
-    function doLogout() {
-      alert("Signed out successfully.");
-      window.location.href = "../../index.html";
-    }
-
-    // Sample loaded user info
-    document.getElementById("userName").textContent = "Clifford Psalm";
-    document.getElementById("userRole").textContent = "Student";
-    document.getElementById("userAvatar").textContent = "C";
-  </script>
-
-</body>
+ </body>
 </html>
