@@ -3,139 +3,199 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home – FEU Lost & Found</title>
-  <link rel="stylesheet" href="./assets/css/style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <title>FEU Tech – Lost & Found</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+
+    .auth-wrapper {
+      display: grid; grid-template-columns: 1fr 1fr;
+      width: 100%; max-width: 960px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .auth-panel {
+      background: linear-gradient(135deg, #0f1923 0%, #1a2e1a 100%);
+      padding: 48px 40px; display: flex; flex-direction: column; justify-content: space-between;
+      position: relative; overflow: hidden;
+    }
+
+    .auth-panel::before {
+      content: '';
+      position: absolute; top: -80px; right: -80px;
+      width: 300px; height: 300px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,197,24,0.15) 0%, transparent 70%);
+    }
+
+    .auth-panel::after {
+      content: '';
+      position: absolute; bottom: -60px; left: -60px;
+      width: 250px; height: 250px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%);
+    }
+
+    .panel-logo { position: relative; z-index: 1; }
+    .panel-logo .logo-mark {
+      width: 52px; height: 52px; border-radius: 14px;
+      background: var(--gold); display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800;
+      color: #000; margin-bottom: 20px;
+      box-shadow: 0 0 30px rgba(245,197,24,0.4);
+    }
+
+    .panel-logo h1 { font-size: 1.8rem; font-weight: 800; color: var(--text); line-height: 1.2; }
+    .panel-logo h1 span { color: var(--gold); }
+    .panel-logo p { color: var(--text2); margin-top: 12px; font-size: 0.95rem; line-height: 1.6; }
+
+    .panel-features { position: relative; z-index: 1; }
+    .feature-item { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .feature-icon { width: 36px; height: 36px; border-radius: 8px; background: rgba(245,197,24,0.1); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+    .feature-text { font-size: 0.85rem; color: var(--text2); }
+
+    .auth-form-side { padding: 48px 40px; display: flex; flex-direction: column; justify-content: center; }
+
+    .tab-switcher { display: flex; background: var(--bg2); border-radius: 10px; padding: 4px; margin-bottom: 32px; }
+    .tab-btn {
+      flex: 1; padding: 10px; border: none; background: none;
+      border-radius: 8px; color: var(--text2); font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all var(--transition);
+    }
+    .tab-btn.active { background: var(--card2); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+
+    .auth-form { display: none; animation: fadeIn 0.3s ease; }
+    .auth-form.active { display: block; }
+
+    .form-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 6px; }
+    .form-subtitle { color: var(--text3); font-size: 0.88rem; margin-bottom: 28px; }
+
+    .submit-btn {
+      width: 100%; padding: 13px; margin-top: 8px;
+      background: var(--gold); color: #000;
+      border: none; border-radius: var(--radius-sm);
+      font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: all var(--transition);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .submit-btn:hover { background: var(--gold2); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,197,24,0.3); }
+
+    .staff-note {
+      margin-top: 20px; padding: 14px; background: var(--gold-glow);
+      border: 1px solid rgba(245,197,24,0.2); border-radius: var(--radius-sm);
+      font-size: 0.82rem; color: var(--text2);
+    }
+
+    .staff-note strong { color: var(--gold); }
+
+    @media (max-width: 768px) {
+      .auth-wrapper { grid-template-columns: 1fr; max-width: 480px; }
+      .auth-panel { display: none; }
+    }
+  </style>
 </head>
 <body>
-  <div class="page-wrapper">
-    <nav class="navbar">
-      <a href="./index.html" class="nav-brand">
-        <img src="./assets/img/asan_kaya__1_-removebg-preview.png" alt="UNIFIND Header Logo" class="header-logo">
-        <span>UNI<span>FIND</span></span>
-      </a>
+<div class="page-wrapper">
+  <div class="auth-wrapper">
+    <div class="auth-panel">
+      <div class="panel-logo">
+        <div class="logo-mark">F</div>
+        <h1>FEU Tech<br><span>Lost & Found</span></h1>
+        <p>A centralized digital platform to report, track, and recover lost items within the campus.</p>
+      </div>
+      <div class="panel-features">
+        <div class="feature-item">
+          <div class="feature-icon">📦</div>
+          <div class="feature-text">Report lost or found items with photos</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🔍</div>
+          <div class="feature-text">Search and filter through all reported items</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">✅</div>
+          <div class="feature-text">Submit claims and track your item status</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🛡️</div>
+          <div class="feature-text">Staff-verified claim approvals</div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-form-side">
+      <div class="tab-switcher">
+        <button class="tab-btn active" onclick="switchTab('login')">Sign In</button>
+        <button class="tab-btn" onclick="switchTab('register')">Register</button>
+      </div>
 
-      <div class="nav-actions">
-        <button class="menu-toggle" id="menuToggle" aria-label="Open Menu">
-          <i class="fa-solid fa-bars"></i>
+      <div id="loginForm" class="auth-form active">
+        <h2 class="form-title">Welcome back</h2>
+        <p class="form-subtitle">Sign in with your FEU email to continue</p>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <div class="input-group">
+            <span class="input-icon">✉</span>
+            <input type="email" id="loginEmail" placeholder="your.name@feutech.edu.ph" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-group">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="loginPassword" placeholder="Enter your password" required>
+          </div>
+        </div>
+        <button class="submit-btn" id="loginBtn" onclick="doLogin()">
+          <span id="loginBtnText">Sign In</span>
         </button>
 
-        <div class="nav-links" id="navLinks">
-          <a href="./index.html" class="nav-link active">
-            <i class="fa-solid fa-house"></i>
-            <span>Home</span>
-          </a>
-
-          <a href="./pages/page1/report.html" class="nav-link">
-            <i class="fa-solid fa-file-circle-exclamation"></i>
-            <span>Report</span>
-          </a>
-
-          <a href="./pages/page2/claim.html" class="nav-link">
-            <i class="fa-solid fa-hand-holding-heart"></i>
-            <span>Claim</span>
-          </a>
-
-          <a href="./pages/page3/dashboard.html" class="nav-link">
-            <i class="fa-solid fa-chart-column"></i>
-            <span>Dashboard</span>
-          </a>
+        <div class="staff-note">
+          <strong>Staff Access:</strong> staff@feutech.edu.ph / password
         </div>
       </div>
-    </nav>
 
-    <section class="hero">
-      <div class="hero-inner">
-        <div class="hero-left">
-          <div class="hero-logo-card">
-            <img src="./assets/img/logo2-lf-removebg-preview.png" alt="UNIFIND Home Logo" class="hero-logo">
-            <div class="hero-logo-caption">
-              <h3>UNIFIND</h3>
-              <p>Track and trace your belongings</p>
-            </div>
+      <div id="registerForm" class="auth-form">
+        <h2 class="form-title">Create account</h2>
+        <p class="form-subtitle">Join to report and track lost items</p>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" id="regFname" placeholder="Juan" required>
           </div>
-
-          <div class="hero-text">
-            <p class="hero-kicker">FEU Tech Lost and Found Portal</p>
-            <h1 class="hero-title">Track and recover your <span>belongings</span> with ease</h1>
-            <p class="hero-description">
-              Browse all reported lost and found items from the FEU Tech community in one organized and easy-to-use space.
-            </p>
-
-            <div class="hero-actions">
-              <a href="./pages/page1/report.html" class="btn btn-primary">
-                <i class="fa-solid fa-plus"></i>
-                <span>Report an Item</span>
-              </a>
-
-              <a href="#itemsGrid" class="btn btn-secondary">
-                <i class="fa-solid fa-box-open"></i>
-                <span>Browse Items</span>
-              </a>
-            </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" id="regLname" placeholder="dela Cruz" required>
           </div>
         </div>
-      </div>
-    </section>
-
-    <div class="search-wrap">
-      <div class="search-bar">
-        <div class="search-inner">
-          <div class="search-field">
-            <input type="text" id="searchInput" placeholder="Search by item name, color, location, or description">
+        <div class="form-group">
+          <label>FEU Email</label>
+          <input type="email" id="regEmail" placeholder="202X-XXXXX-MN-0@feutech.edu.ph" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Student ID</label>
+            <input type="text" id="regStudentId" placeholder="202X-XXXXX-MN-0">
           </div>
-
-          <div class="filter-group">
-            <select id="typeFilter">
-              <option value="">All Types</option>
-              <option value="found">Found Items</option>
-              <option value="lost">Lost Items</option>
-            </select>
-
-            <select id="statusFilter">
-              <option value="">All Statuses</option>
-              <option value="found">Found</option>
-              <option value="lost">Lost</option>
-              <option value="claimed">Claimed</option>
-              <option value="returned">Returned</option>
-            </select>
+          <div class="form-group">
+            <label>Contact No.</label>
+            <input type="text" id="regContact" placeholder="09XXXXXXXXX">
           </div>
         </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="regPassword" placeholder="At least 8 characters" required>
+        </div>
+        <button class="submit-btn" id="registerBtn" onclick="doRegister()">
+          <span id="registerBtnText">Create Account</span>
+        </button>
       </div>
     </div>
-
-    <main class="container">
-      <div class="results-header">
-        <p class="results-count"><strong id="itemCount">0</strong> items found</p>
-      </div>
-
-      <div id="itemsGrid" class="items-grid"></div>
-    </main>
   </div>
-
-  <div class="modal-overlay" id="detailModal">
-    <div class="modal detail-modal">
-      <div class="modal-header">
-        <h3 class="modal-title" id="modalTitle">Item Details</h3>
-        <button class="close-btn" id="closeModalBtn">✕</button>
-      </div>
-
-      <div id="modalMainImg" class="main-img">📦</div>
-      <div id="modalImages" class="detail-images"></div>
-      <div id="modalBadge"></div>
-
-      <div class="modal-body-space">
-        <div class="detail-grid" id="modalDetails"></div>
-        <div id="modalDescription"></div>
-      </div>
-
-      <div id="claimSection"></div>
-    </div>
-  </div>
-
-  <div class="toast-container" id="toastContainer"></div>
-
-  <script src="./assets/js/utils.js"></script>
-  <script src="./assets/js/script.js"></script>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script src="/js/auth.js"></script>
 </body>
 </html>
