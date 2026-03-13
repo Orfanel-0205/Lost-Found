@@ -96,15 +96,39 @@ function handleDrop(e) {
   handleFiles(e.dataTransfer.files);
 }
 
-function submitReport() {
+async function submitReport() {
   const name = document.getElementById('itemName').value.trim();
-  if (!name) {
-    showToast('Please enter the item name.', 'error');
-    return;
+  if (!name) { showToast('Please enter the item name.', 'error'); return; }
+
+  const formData = new FormData();
+  formData.append('itemName', name);
+  formData.append('reportType', currentType);
+  formData.append('itemColor', document.getElementById('itemColor').value.trim());
+  formData.append('itemQuantity', document.getElementById('itemQuantity').value || 1);
+  formData.append('itemType', document.getElementById('itemType').value);
+  formData.append('location', document.getElementById('itemLocation').value.trim());
+  formData.append('dateReported', document.getElementById('itemDate').value);
+  formData.append('description', document.getElementById('itemDescription').value.trim());
+
+  uploadedFiles.forEach(file => formData.append('images', file));
+
+  const btn = document.getElementById('submitBtn');
+  const btnText = document.getElementById('submitBtnText');
+  btn.disabled = true;
+  btnText.textContent = 'Submitting...';
+
+  try {
+    const res = await fetch('/api/items', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Submission failed', 'error'); return; }
+    document.getElementById('reportForm').style.display = 'none';
+    document.getElementById('successState').classList.add('visible');
+  } catch {
+    showToast('Connection error. Make sure server is running.', 'error');
+  } finally {
+    btn.disabled = false;
+    btnText.textContent = 'Submit Report';
   }
-  document.getElementById('reportForm').style.display = 'none';
-  document.getElementById('successState').classList.add('visible');
-  showToast('Report submitted successfully!');
 }
 
 function showToast(msg, type = 'success') {

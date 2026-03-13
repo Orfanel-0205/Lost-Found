@@ -15,10 +15,10 @@ async function loadMyClaims() {
   } catch { showToast('Connection error', 'error'); }
 }
 
-function filterClaims(filter) {
+function filterClaims(filter, el) {
   activeFilter = filter;
   document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
+  el.classList.add('active');
   renderClaims();
 }
 
