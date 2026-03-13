@@ -503,3 +503,47 @@ a {
     font-size: 0.72rem;
   }
 }
+
+.claim-submission-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.item-details-card, .claim-form-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.item-details-card h3, .claim-form-card h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.form-hint {
+  font-size: 0.85rem;
+  color: var(--text3);
+  margin-top: -12px;
+  margin-bottom: 12px;
+}
+
+textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}

@@ -15,6 +15,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('typeFilter').addEventListener('change', loadItems);
   document.getElementById('statusFilter').addEventListener('change', loadItems);
+  document.getElementById('closeModalBtn').addEventListener('click', closeModal);
 });
 
 async function loadItems() {
@@ -40,7 +41,7 @@ function renderItems() {
   count.textContent = allItems.length;
 
   if (allItems.length === 0) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;"><div class="empty-icon">📭</div><p>No items found. Try adjusting your search or filters.</p><a href="/report.html" class="btn btn-primary" style="margin-top: 8px;">Report an Item</a></div>`;
+    grid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;"><div class="empty-icon">📭</div><p>No items found. Try adjusting your search or filters.</p><a href="../page1/report.html" class="btn btn-primary" style="margin-top: 8px;">Report an Item</a></div>`;
     return;
   }
 
@@ -111,20 +112,10 @@ async function openDetail(itemId) {
     if (currentUser && (item.Status === 'found') && item.ReportedBy !== currentUser.id) {
       claimSection.innerHTML = `
         <div class="claim-form-section">
-          <h4 class="claim-section-title">🔖 Submit a Claim</h4>
-          <div class="form-group">
-            <label>Proof of Ownership Description *</label>
-            <textarea id="claimProof" placeholder="Describe identifying features, contents, or any details only the owner would know..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>Supporting Photo (optional)</label>
-            <div class="file-upload-area" onclick="document.getElementById('claimImageInput').click()" style="padding: 20px;">
-              <input type="file" id="claimImageInput" accept="image/*">
-              <div class="upload-icon" style="font-size:1.5rem;margin-bottom:4px;">📎</div>
-              <p>Click to attach a proof image</p>
-            </div>
-          </div>
-          <button class="btn btn-primary" onclick="submitClaim(${item.ItemID})" style="width:100%;">Submit Claim</button>
+           <a href="../page2/claim.html?itemId=${item.ItemID}" class="btn btn-primary" style="width:100%;">
+            <i class="fa-solid fa-hand-holding-heart"></i>
+            Claim This Item
+          </a>
         </div>
       `;
     } else if (item.Status === 'returned') {
@@ -149,27 +140,6 @@ function closeModal() {
 document.getElementById('detailModal').addEventListener('click', e => {
   if (e.target === document.getElementById('detailModal')) closeModal();
 });
-
-async function submitClaim(itemId) {
-  const proof = document.getElementById('claimProof').value.trim();
-  if (!proof) { showToast('Please provide proof of ownership description', 'error'); return; }
-
-  const formData = new FormData();
-  formData.append('itemId', itemId);
-  formData.append('proofDescription', proof);
-
-  const imgInput = document.getElementById('claimImageInput');
-  if (imgInput && imgInput.files[0]) formData.append('proofImage', imgInput.files[0]);
-
-  try {
-    const res = await fetch('/api/claims', { method: 'POST', body: formData });
-    const data = await res.json();
-    if (!res.ok) { showToast(data.error || 'Failed to submit claim', 'error'); return; }
-    showToast('Claim submitted successfully! Staff will review it.', 'success');
-    closeModal();
-    loadItems();
-  } catch { showToast('Connection error', 'error'); }
-}
 
 function escapeHtml(str) {
   if (!str) return '';

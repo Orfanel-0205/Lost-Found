@@ -3,35 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Claim Page | UNIFIND</title>
-
-  <link rel="stylesheet" href="../page2/assets/css/style.css" />
+  <title>Submit Claim | UNIFIND</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
-
   <!-- NAVBAR -->
   <nav class="navbar">
-    <a href="../../index.html" class="nav-brand">
-      <img src="../page1/assets/img/asan_kaya__1_-removebg-preview.png" class="nav-logo-img" alt="UNIFIND Logo">
+    <a href="../page4/home.html" class="nav-brand">
+      <img src="assets/img/asan_kaya__1_-removebg-preview.png" class="nav-logo-img" alt="UNIFIND Logo">
       <span>UNI<span>FIND</span></span>
     </a>
-
     <div class="nav-links">
-      <a href="../../index.html" class="nav-link">
+      <a href="../page4/home.html" class="nav-link">
         <i class="fa-solid fa-house"></i> Home
       </a>
       <a href="../page1/report.html" class="nav-link">
         <i class="fa-solid fa-file-circle-exclamation"></i> Report
       </a>
-      <a href="../page2/claim.html" class="nav-link active">
-        <i class="fa-solid fa-hand-holding-heart"></i> Claim
+      <a href="../page5/my-claims.html" class="nav-link">
+        <i class="fa-solid fa-hand-holding-heart"></i> My Claims
       </a>
-      <a href="../page3/dashboard.html" class="nav-link">
+      <a href="../page3/dashboard.html" class="nav-link" id="dashboardLink" style="display:none;">
         <i class="fa-solid fa-chart-column"></i> Dashboard
       </a>
     </div>
-
     <div class="nav-user">
       <div class="user-badge">
         <div class="user-avatar" id="userAvatar">?</div>
@@ -47,79 +43,45 @@
   <!-- PAGE CONTENT -->
   <div class="container">
     <div class="page-header">
-      <h1 class="page-title">My <span>Claims</span></h1>
-      <p class="page-subtitle">Track the status of all your submitted claims</p>
+      <h1 class="page-title">Submit a <span>Claim</span></h1>
+      <p class="page-subtitle">Provide proof of ownership for the item you wish to claim.</p>
     </div>
 
-  <button class="section-tab active" onclick="filterClaims('all', this)">All</button>
-<button class="section-tab" onclick="filterClaims('pending', this)">⏳ Pending</button>
-<button class="section-tab" onclick="filterClaims('approved', this)">✅ Approved</button>
-<button class="section-tab" onclick="filterClaims('rejected', this)">❌ Rejected</button>
-
-    <!-- CLAIMS LIST -->
-    <div id="claimsList" class="claims-list">
-
-      <div class="claim-card" data-status="pending">
-        <div class="claim-thumb">
-          <img src="https://via.placeholder.com/80x80?text=ID" alt="School ID">
-        </div>
-        <div class="claim-info">
-          <h4>School ID</h4>
-          <div class="claim-meta">
-            <span><i class="fa-regular fa-calendar"></i> Submitted: March 10, 2026</span>
-            <span><i class="fa-solid fa-location-dot"></i> Found at: Library 2nd Floor</span>
-            <span><i class="fa-solid fa-receipt"></i> Claim Ref: CLM-1024</span>
-          </div>
-        </div>
-        <div class="claim-status-col">
-          <span class="badge badge-found">Pending</span>
-          <button class="btn btn-secondary btn-sm">View</button>
+    <div class="claim-submission-grid">
+      <div class="item-details-card">
+        <h3>Item You Are Claiming</h3>
+        <div id="itemDetails">
+          <p>Loading item details...</p>
         </div>
       </div>
-
-      <div class="claim-card" data-status="approved">
-        <div class="claim-thumb">
-          <img src="https://via.placeholder.com/80x80?text=Wallet" alt="Wallet">
-        </div>
-        <div class="claim-info">
-          <h4>Brown Wallet</h4>
-          <div class="claim-meta">
-            <span><i class="fa-regular fa-calendar"></i> Submitted: March 8, 2026</span>
-            <span><i class="fa-solid fa-location-dot"></i> Found at: Cafeteria</span>
-            <span><i class="fa-solid fa-receipt"></i> Claim Ref: CLM-1019</span>
+      <div class="claim-form-card">
+        <h3>Your Proof of Ownership</h3>
+        <form id="claimForm">
+          <div class="form-group">
+            <label for="proofDescription">
+              Describe why you believe this is your item. Include any unique identifying marks, contents, or features.
+            </label>
+            <textarea id="proofDescription" rows="6" placeholder="e.g., 'This is my wallet because it has a picture of my dog inside and a scratch on the corner.'"></textarea>
           </div>
-        </div>
-        <div class="claim-status-col">
-          <span class="badge badge-claimed">Approved</span>
-          <button class="btn btn-secondary btn-sm">View</button>
-        </div>
-      </div>
-
-      <div class="claim-card" data-status="rejected">
-        <div class="claim-thumb">
-          <img src="https://via.placeholder.com/80x80?text=Phone" alt="Phone">
-        </div>
-        <div class="claim-info">
-          <h4>Black Smartphone</h4>
-          <div class="claim-meta">
-            <span><i class="fa-regular fa-calendar"></i> Submitted: March 5, 2026</span>
-            <span><i class="fa-solid fa-location-dot"></i> Found at: Gymnasium</span>
-            <span><i class="fa-solid fa-receipt"></i> Claim Ref: CLM-1008</span>
+          <div class="form-group">
+            <label for="proofImage">
+              Upload a supporting image (optional)
+            </label>
+            <p class="form-hint">This could be a photo of you with the item, a receipt, or any other visual proof.</p>
+            <input type="file" id="proofImage" accept="image/*">
           </div>
-        </div>
-        <div class="claim-status-col">
-          <span class="badge badge-returned">Rejected</span>
-          <button class="btn btn-secondary btn-sm">View</button>
-        </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-paper-plane"></i>
+            Submit Claim
+          </button>
+        </form>
       </div>
-
     </div>
   </div>
 
-
   <div class="toast-container" id="toastContainer"></div>
 
-  <script src="../../page2/assets/js/scripts.js"></script>
-
- </body>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="assets/js/scripts.js"></script>
+</body>
 </html>
