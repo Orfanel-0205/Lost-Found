@@ -1,31 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard – UNIFIND</title>
-  <link rel="stylesheet" href="./assets/css/style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Dashboard – UNIFIND</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../Admin/assets/css/style.css" />
 </head>
 <body>
 
+  <!-- ═══ NAVBAR ══════════════════════════════════════════════════════════ -->
   <nav class="navbar">
-    <a href="../../index.html" class="nav-brand">
-      <img src="../page1/assets/img/asan_kaya__1_-removebg-preview.png" class="nav-logo-img" alt="UNIFIND Logo">
+
+    <a href="./dashboard.html" class="nav-brand">
+      <img src="../../assets/img/asan_kaya__1_-removebg-preview.png" class="nav-logo-img" alt="UNIFIND">
       <span>UNI<span>FIND</span></span>
     </a>
 
     <div class="nav-links">
-      <a href="../../index.html" class="nav-link">
+      <a href="../page4/home.html" class="nav-link">
         <i class="fa-solid fa-house"></i> Home
       </a>
       <a href="../page1/report.html" class="nav-link">
         <i class="fa-solid fa-file-circle-exclamation"></i> Report
       </a>
-      <a href="../page2/claim.html" class="nav-link">
-        <i class="fa-solid fa-hand-holding-heart"></i> Claim
-      </a>
-      <a href="../page3/dashboard.html" class="nav-link active">
+      <a href="./dashboard.html" class="nav-link active">
         <i class="fa-solid fa-chart-column"></i> Dashboard
       </a>
     </div>
@@ -34,7 +36,7 @@
       <div class="user-badge">
         <div class="user-avatar" id="userAvatar">?</div>
         <div>
-          <div class="user-name" id="userName">Loading...</div>
+          <div class="user-name" id="userName">Loading…</div>
           <div class="user-role" id="userRole">Staff</div>
         </div>
       </div>
@@ -42,75 +44,62 @@
         <i class="fa-solid fa-right-from-bracket"></i> Sign Out
       </button>
     </div>
+
   </nav>
 
+  <!-- ═══ DASHBOARD CONTENT ════════════════════════════════════════════════ -->
   <div class="dash-wrapper">
 
     <div class="dash-header">
       <div>
         <h1 class="dash-title">Staff <span>Dashboard</span></h1>
-        <p class="dash-subtitle">Manage items, review claims, and monitor system activity</p>
+        <p class="dash-subtitle">Manage items, review claims, and monitor activity</p>
       </div>
       <button class="btn btn-primary" onclick="refreshAll()">
         <i class="fa-solid fa-rotate"></i> Refresh
       </button>
     </div>
 
-    <div class="stats-grid" id="statsGrid">
+    <!-- Stats row -->
+    <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon stat-icon-total"><i class="fa-solid fa-boxes-stacked"></i></div>
-        <div class="stat-info">
-          <div class="stat-value" id="statTotal">—</div>
-          <div class="stat-label">Total Items</div>
-        </div>
+        <div class="stat-info"><div class="stat-value" id="statTotal">—</div><div class="stat-label">Total Items</div></div>
       </div>
       <div class="stat-card">
         <div class="stat-icon stat-icon-found"><i class="fa-solid fa-box-open"></i></div>
-        <div class="stat-info">
-          <div class="stat-value" id="statFound">—</div>
-          <div class="stat-label">Found Items</div>
-        </div>
+        <div class="stat-info"><div class="stat-value" id="statFound">—</div><div class="stat-label">Found Items</div></div>
       </div>
       <div class="stat-card">
         <div class="stat-icon stat-icon-lost"><i class="fa-solid fa-magnifying-glass"></i></div>
-        <div class="stat-info">
-          <div class="stat-value" id="statLost">—</div>
-          <div class="stat-label">Lost Items</div>
-        </div>
+        <div class="stat-info"><div class="stat-value" id="statLost">—</div><div class="stat-label">Lost Items</div></div>
       </div>
       <div class="stat-card">
         <div class="stat-icon stat-icon-claimed"><i class="fa-solid fa-tag"></i></div>
-        <div class="stat-info">
-          <div class="stat-value" id="statClaimed">—</div>
-          <div class="stat-label">Claimed</div>
-        </div>
+        <div class="stat-info"><div class="stat-value" id="statClaimed">—</div><div class="stat-label">Claimed</div></div>
       </div>
       <div class="stat-card">
         <div class="stat-icon stat-icon-returned"><i class="fa-solid fa-check-circle"></i></div>
-        <div class="stat-info">
-          <div class="stat-value" id="statReturned">—</div>
-          <div class="stat-label">Returned</div>
-        </div>
+        <div class="stat-info"><div class="stat-value" id="statReturned">—</div><div class="stat-label">Returned</div></div>
       </div>
       <div class="stat-card stat-card-pending">
         <div class="stat-icon stat-icon-pending"><i class="fa-solid fa-clock"></i></div>
-        <div class="stat-info">
-          <div class="stat-value" id="statPending">—</div>
-          <div class="stat-label">Pending Claims</div>
-        </div>
+        <div class="stat-info"><div class="stat-value" id="statPending">—</div><div class="stat-label">Pending Claims</div></div>
       </div>
     </div>
 
+    <!-- Section tabs -->
     <div class="section-tabs">
-      <button class="section-tab active" id="tabClaims" onclick="showSection('claims', this)">
+      <button class="section-tab active" onclick="showSection('claims', this)">
         <i class="fa-solid fa-clipboard-list"></i> Claim Requests
         <span class="tab-badge" id="pendingBadge"></span>
       </button>
-      <button class="section-tab" id="tabItems" onclick="showSection('items', this)">
+      <button class="section-tab" onclick="showSection('items', this)">
         <i class="fa-solid fa-layer-group"></i> Manage Items
       </button>
     </div>
 
+    <!-- Claims section -->
     <div id="sectionClaims">
       <div class="section-toolbar">
         <h2 class="section-title">Claim Requests</h2>
@@ -128,11 +117,12 @@
       </div>
     </div>
 
-    <div id="sectionItems" style="display:none;">
+    <!-- Items section -->
+    <div id="sectionItems" style="display:none">
       <div class="section-toolbar">
         <h2 class="section-title">All Items</h2>
         <div class="toolbar-filters">
-          <input type="text" id="itemSearch" placeholder="Search items..." oninput="debounceSearch()">
+          <input type="text" id="itemSearch" placeholder="Search items…" oninput="debounceSearch()" />
           <select id="itemStatusFilter" onchange="loadItems()">
             <option value="">All Statuses</option>
             <option value="found">Found</option>
@@ -149,6 +139,7 @@
 
   </div>
 
+  <!-- ═══ EDIT ITEM MODAL ══════════════════════════════════════════════════ -->
   <div class="modal-overlay" id="editModal">
     <div class="modal">
       <div class="modal-header">
@@ -185,7 +176,7 @@
         </div>
         <div class="form-group full-width">
           <label>Description</label>
-          <textarea id="editDescription" placeholder="Item description..."></textarea>
+          <textarea id="editDescription" placeholder="Item description…"></textarea>
         </div>
       </div>
       <div class="modal-actions">
@@ -197,6 +188,7 @@
     </div>
   </div>
 
+  <!-- ═══ CLAIM DETAIL MODAL ═══════════════════════════════════════════════ -->
   <div class="modal-overlay" id="claimDetailModal">
     <div class="modal">
       <div class="modal-header">
@@ -208,13 +200,17 @@
     </div>
   </div>
 
+  <!-- ═══ DELETE CONFIRM MODAL ═════════════════════════════════════════════ -->
   <div class="modal-overlay" id="deleteModal">
     <div class="modal modal-sm">
       <div class="modal-header">
         <h3 class="modal-title">Delete Item</h3>
         <button class="close-btn" onclick="closeDeleteModal()">✕</button>
       </div>
-      <p class="delete-confirm-text">Are you sure you want to delete <strong id="deleteItemName"></strong>? This action cannot be undone.</p>
+      <p class="delete-confirm-text">
+        Are you sure you want to delete <strong id="deleteItemName"></strong>?
+        This action cannot be undone.
+      </p>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeDeleteModal()">Cancel</button>
         <button class="btn btn-danger" onclick="confirmDelete()">
@@ -224,9 +220,12 @@
     </div>
   </div>
 
+  <!-- Toast -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <script src="../../assets/js/utils.js"></script>
-  <script src="./assets/js/scripts.js"></script>
+  <!-- Scripts: utils first, then dashboard script -->
+  <script src="../Admin/assets/js/utils.js"></script>
+  <script src="../Admin/assets/js/scripts.js"></script>
+
 </body>
 </html>

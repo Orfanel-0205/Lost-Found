@@ -13,7 +13,7 @@ async function checkAuth() {
   try {
     const res = await fetch('/api/me');
     if (!res.ok) {
-      window.location.href = '/';
+      window.location.href = '/index.html';
       return null;
     }
 
@@ -33,7 +33,7 @@ async function checkAuth() {
     return user;
   } catch (err) {
     console.error('Auth check failed:', err);
-    window.location.href = '/';
+    window.location.href = '/index.html';
     return null;
   }
 }
@@ -48,7 +48,7 @@ async function doLogout() {
   } catch {
     // Even if the request fails, redirect to login
   } finally {
-    window.location.href = '/';
+    window.location.href = '/index.html';
   }
 }
 

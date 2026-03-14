@@ -69,7 +69,7 @@ async function testDatabaseConnection() {
    MIDDLEWARE
 ========================= */
 // Homepage route
-app.get('/', (req, res) => {
+app.get(['/', '/index.html'], (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
@@ -461,7 +461,13 @@ app.get('/api/claims', requireStaff, async (req, res) => {
          i.ItemName,
          i.ItemColor,
          i.Description AS ItemDescription,
-         i.Status AS ItemStatus
+         i.Status      AS ItemStatus,
+         (
+           SELECT ImagePath
+           FROM item_images
+           WHERE ItemID = i.ItemID
+           LIMIT 1
+         ) AS ThumbnailPath
        FROM claims c
        JOIN users u ON c.UserID = u.UserID
        JOIN items i ON c.ItemID = i.ItemID

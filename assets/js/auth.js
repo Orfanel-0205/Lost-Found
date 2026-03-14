@@ -12,7 +12,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 async function doLogout() {
   try {
     await fetch('/api/logout', { method: 'POST' });
-    window.location.href = '../index.html';
+    window.location.href = '/';
   } catch (error) {
     console.error('Logout failed:', error);
     alert('Logout failed. Please try again.');
@@ -93,7 +93,7 @@ async function doLogin() {
     setTimeout(() => {
       window.location =
         data.user.roleName === 'staff'
-          ? 'pages/page3/dashboard.html'
+          ? 'pages/Admin/dashboard.html'
           : 'pages/page4/home.html';
     }, 800);
   } catch (error) {
