@@ -9,6 +9,16 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+async function doLogout() {
+  try {
+    await fetch('/api/logout', { method: 'POST' });
+    window.location.href = '../index.html';
+  } catch (error) {
+    console.error('Logout failed:', error);
+    alert('Logout failed. Please try again.');
+  }
+}
+
 function switchTab(tab) {
   const tabButtons = document.querySelectorAll('.tab-btn');
   const forms = document.querySelectorAll('.auth-form');

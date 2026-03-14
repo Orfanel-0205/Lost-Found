@@ -407,7 +407,7 @@ app.delete('/api/items/:id', requireStaff, async (req, res) => {
 });
 
 /* =========================
-   CLAIM ROUTES
+   Claim rOutes
 ========================= */
 app.post('/api/claims', requireLogin, upload.single('proofImage'), async (req, res) => {
   const { itemId, proofDescription } = req.body;
@@ -555,7 +555,7 @@ app.put('/api/claims/:id', requireStaff, async (req, res) => {
 });
 
 /* =========================
-   DASHBOARD ROUTES
+  Dashboard Statistic ROUtes
 ========================= */
 app.get('/api/dashboard-stats', requireStaff, async (req, res) => {
   try {
@@ -592,7 +592,7 @@ app.get('/api/dashboard-stats', requireStaff, async (req, res) => {
 });
 
 /* =========================
-   START SERVER
+   TO START SERVER
 ========================= */
 async function startServer() {
   await testDatabaseConnection();
@@ -603,3 +603,9 @@ async function startServer() {
 }
 
 startServer();
+
+app.post('/api/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.json({ success: true });
+  });
+});
