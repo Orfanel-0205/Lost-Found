@@ -1,5 +1,5 @@
+// pages/Admin/assets/js/scripts.js
 // ─── STATE ────────────────────────────────────────────
-let allClaimsData  = [];
 let allItemsData   = [];
 let pendingDeleteId = null;
 let searchTimer     = null;
@@ -15,7 +15,8 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function refreshAll() {
-  await Promise.all([loadStats(), loadClaims()]);
+  // Load stats and the default testimonials view
+  await Promise.all([loadStats(), loadTestimonials()]);
 }
 
 // ─── STATS ────────────────────────────────────────────
@@ -28,13 +29,7 @@ async function loadStats() {
     setText('statLost',     data.lost    ?? '—');
     setText('statClaimed',  data.claimed ?? '—');
     setText('statReturned', data.returned ?? '—');
-    setText('statPending',  data.pending ?? '—');
-
-    const badge = document.getElementById('pendingBadge');
-    if (badge) {
-      badge.textContent = data.pending;
-      badge.classList.toggle('show', data.pending > 0);
-    }
+    // The pending claims stat is no longer displayed
   } catch (err) {
     console.error('Stats error:', err);
   }
@@ -49,189 +44,67 @@ function setText(id, val) {
 function showSection(section, el) {
   document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('sectionClaims').style.display = section === 'claims' ? 'block' : 'none';
-  document.getElementById('sectionItems').style.display  = section === 'items'  ? 'block' : 'none';
-  if (section === 'claims') loadClaims();
-  else                      loadItems();
-}
 
-// ─── CLAIMS TABLE ─────────────────────────────────────
-async function loadClaims() {
-  const wrap   = document.getElementById('claimsTableWrap');
-  const filter = document.getElementById('claimStatusFilter')?.value || '';
-  wrap.innerHTML = loadingHTML();
+  // Hide all sections first
+  document.getElementById('sectionTestimonials').style.display = 'none';
+  document.getElementById('sectionItems').style.display  = 'none';
+  document.getElementById('sectionClaims').style.display = 'none';
 
-  try {
-    const res = await fetch('/api/claims');
-    if (!res.ok) throw new Error(await res.text());
-
-    let claims = await res.json();
-    allClaimsData = claims;
-
-    if (filter) claims = claims.filter(c => c.ClaimStatus === filter);
-
-    if (claims.length === 0) {
-      wrap.innerHTML = emptyHTML('📋', `No ${filter || ''} claims found.`);
-      return;
+  // Show the target section and load its data
+  const targetSection = document.getElementById(`section${section.charAt(0).toUpperCase() + section.slice(1)}`);
+  if (targetSection) {
+    targetSection.style.display = 'block';
+    if (section === 'items') {
+      loadItems();
+    } else if (section === 'claims') {
+      loadClaims();
     }
-
-    wrap.innerHTML = `
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Claimant</th>
-              <th>Proof Preview</th>
-              <th>Submitted</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${claims.map((c, idx) => {
-              const globalIdx = allClaimsData.findIndex(x => x.ClaimID === c.ClaimID);
-              return `
-              <tr>
-                <td>
-                  <div class="td-item">
-                    <div class="td-thumb">
-                      ${c.ThumbnailPath ? `<img src="${c.ThumbnailPath}" alt="">` : '📦'}
-                    </div>
-                    <div>
-                      <div class="td-item-name">${escapeHtml(c.ItemName)}</div>
-                      <div class="td-item-meta">${escapeHtml(c.ItemColor || '—')}</div>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div class="td-item-name">${escapeHtml(c.FName + ' ' + c.LName)}</div>
-                  <div class="td-item-meta">${escapeHtml(c.StudentID || c.Email || '—')}</div>
-                </td>
-                <td>
-                  <div class="proof-text">${escapeHtml(c.ProofDescription || '—')}</div>
-                </td>
-                <td>${formatDate(c.ClaimDate)}</td>
-                <td>${getBadgeHTML(c.ClaimStatus)}</td>
-                <td>
-                  <div class="td-actions">
-                    <button class="btn btn-primary btn-sm btn-icon" onclick="openClaimDetail(${globalIdx})" title="View Details">
-                      <i class="fa-solid fa-eye"></i>
-                    </button>
-                    ${c.ClaimStatus === 'pending' ? `
-                      <button class="btn btn-success btn-sm" onclick="reviewClaim(${c.ClaimID},'approved')">
-                        <i class="fa-solid fa-check"></i> Approve
-                      </button>
-                      <button class="btn btn-danger btn-sm" onclick="reviewClaim(${c.ClaimID},'rejected')">
-                        <i class="fa-solid fa-xmark"></i> Reject
-                      </button>
-                    ` : ''}
-                  </div>
-                </td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>`;
-  } catch (err) {
-    wrap.innerHTML = emptyHTML('⚠️', 'Failed to load claims: ' + err.message);
   }
 }
 
-// ─── CLAIM DETAIL MODAL ───────────────────────────────
-function openClaimDetail(idx) {
-  const c = allClaimsData[idx];
-  if (!c) return;
+// ─── TESTIMONIALS ───────────────────────────────────
+async function loadTestimonials() {
+  const grid = document.getElementById('testimonialsGrid');
+  grid.innerHTML = loadingHTML();
 
-  document.getElementById('claimDetailBody').innerHTML = `
-    <div class="claim-detail-grid">
-      <div class="claim-detail-field">
-        <label>Item Name</label>
-        <p>${escapeHtml(c.ItemName)}</p>
-      </div>
-      <div class="claim-detail-field">
-        <label>Item Color</label>
-        <p>${escapeHtml(c.ItemColor || '—')}</p>
-      </div>
-      <div class="claim-detail-field">
-        <label>Item Status</label>
-        <p>${getBadgeHTML(c.ItemStatus)}</p>
-      </div>
-      <div class="claim-detail-field">
-        <label>Claim Status</label>
-        <p>${getBadgeHTML(c.ClaimStatus)}</p>
-      </div>
-      <div class="claim-detail-field">
-        <label>Claimant</label>
-        <p>${escapeHtml(c.FName + ' ' + c.LName)}</p>
-      </div>
-      <div class="claim-detail-field">
-        <label>Student ID</label>
-        <p>${escapeHtml(c.StudentID || '—')}</p>
-      </div>
-      <div class="claim-detail-field">
-        <label>Email</label>
-        <p>${escapeHtml(c.Email || '—')}</p>
-      </div>
-      <div class="claim-detail-field">
-        <label>Date Submitted</label>
-        <p>${formatDate(c.ClaimDate)}</p>
-      </div>
-    </div>
-
-    ${c.ProofDescription ? `
-      <div class="proof-box">
-        <label>Proof of Ownership</label>
-        <p>${escapeHtml(c.ProofDescription)}</p>
-      </div>` : ''}
-
-    ${c.ProofImagePath ? `
-      <div class="proof-box">
-        <label>Supporting Image</label>
-        <div class="proof-img-wrap">
-          <img src="${c.ProofImagePath}" alt="Proof of ownership image">
-        </div>
-      </div>` : `
-      <div class="proof-box" style="opacity:.6">
-        <label>Supporting Image</label>
-        <p style="font-style:italic;color:var(--text3)">No supporting image was uploaded.</p>
-      </div>`}
-  `;
-
-  document.getElementById('claimDetailActions').innerHTML = `
-    <button class="btn btn-ghost" onclick="closeClaimModal()">Close</button>
-    ${c.ClaimStatus === 'pending' ? `
-      <button class="btn btn-danger" onclick="reviewClaim(${c.ClaimID},'rejected');closeClaimModal();">
-        <i class="fa-solid fa-xmark"></i> Reject
-      </button>
-      <button class="btn btn-success" onclick="reviewClaim(${c.ClaimID},'approved');closeClaimModal();">
-        <i class="fa-solid fa-check"></i> Approve Claim
-      </button>
-    ` : ''}
-  `;
-
-  document.getElementById('claimDetailModal').classList.add('active');
-}
-
-function closeClaimModal() {
-  document.getElementById('claimDetailModal').classList.remove('active');
-}
-
-async function reviewClaim(claimId, status) {
   try {
-    const res = await fetch(`/api/claims/${claimId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status })
-    });
+    const res = await fetch('/api/items?status=returned');
+    if (!res.ok) throw new Error(await res.text());
 
-    const data = await res.json();
-    if (!res.ok) { showToast(data.error || 'Failed to update claim', 'error'); return; }
+    const returnedItems = await res.json();
 
-    showToast(`Claim ${status} successfully! ✅`, 'success');
-    await refreshAll();
-  } catch {
-    showToast('Connection error', 'error');
+    if (returnedItems.length === 0) {
+      grid.innerHTML = emptyHTML('🏆', 'No successfully returned items yet.');
+      return;
+    }
+
+    grid.innerHTML = returnedItems.map(item => {
+      // For testimonials, we need to know who it was returned to.
+      // This information isn't in the /api/items response.
+      // For now, we'll just show the item and that it was returned.
+      // A future update could enhance the API to provide claimant details.
+      return `
+        <div class="testimonial-card">
+          <div class="testimonial-img">
+            ${item.ThumbnailPath ? `<img src="${item.ThumbnailPath}" alt="${escapeHtml(item.ItemName)}">` : '📦'}
+          </div>
+          <div class="testimonial-body">
+            <h4 class="testimonial-item-name">${escapeHtml(item.ItemName)}</h4>
+            <p class="testimonial-meta">
+              Originally reported by <strong>${escapeHtml(item.FName || 'Unknown')}</strong> on ${formatDate(item.DateReported)}.
+            </p>
+            <p class="testimonial-narrative">
+              This item was successfully returned, marking a successful recovery through UNIFIND.
+            </p>
+          </div>
+          <div class="testimonial-footer">
+            <span>Status: ${getBadgeHTML('Returned')}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    grid.innerHTML = emptyHTML('⚠️', 'Failed to load testimonials: ' + err.message);
   }
 }
 
@@ -411,6 +284,116 @@ function loadingHTML() {
 
 function emptyHTML(icon, msg) {
   return `<div class="empty-state"><div class="empty-icon">${icon}</div><p>${msg}</p></div>`;
+}
+
+// ─── CLAIMS TABLE ──────────────────────────────────────
+async function loadClaims() {
+  const wrap = document.getElementById('claimsTableWrap');
+  const status = document.getElementById('claimStatusFilter')?.value || '';
+  wrap.innerHTML = loadingHTML();
+
+  try {
+    let url = '/api/claims/all?';
+    if (status) url += `status=${status}&`;
+
+    const res = await fetch(url);
+    const claims = await res.json();
+
+    if (claims.length === 0) {
+      wrap.innerHTML = emptyHTML('📂', 'No claims found.');
+      return;
+    }
+
+    renderClaims(claims);
+  } catch (err) {
+    wrap.innerHTML = emptyHTML('⚠️', 'Failed to load claims: ' + err.message);
+  }
+}
+
+function renderClaims(claims) {
+  const wrap = document.getElementById('claimsTableWrap');
+  wrap.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Item Name</th>
+            <th>Claimant</th>
+            <th>Proof</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${claims.map(claim => `
+            <tr>
+              <td>${escapeHtml(claim.ItemName)}</td>
+              <td>
+                <div class="td-item-name">${escapeHtml(claim.FName)} ${escapeHtml(claim.LName)}</div>
+                <div class="td-item-meta">${escapeHtml(claim.Email)}</div>
+              </td>
+              <td>
+                <div class="td-item-name">${escapeHtml(claim.ClaimDescription)}</div>
+                <div class="td-item-meta">
+                  <a href="${claim.ClaimImagePath}" target="_blank">View Image</a>
+                </div>
+              </td>
+              <td>${formatDate(claim.ClaimDate)}</td>
+              <td>${getBadgeHTML(claim.ClaimStatus)}</td>
+              <td>
+                <div class="td-actions">
+                  <button class="btn btn-primary btn-sm" onclick="approveClaim(${claim.ClaimID})">Approve</button>
+                  <button class="btn btn-danger btn-sm" onclick="rejectClaim(${claim.ClaimID})">Reject</button>
+                </div>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+async function approveClaim(claimId) {
+  try {
+    const res = await fetch(`/api/claims/${claimId}/approve`, { method: 'PUT' });
+    if (!res.ok) {
+      showToast('Failed to approve claim', 'error');
+      return;
+    }
+    showToast('Claim approved', 'success');
+    await loadClaims();
+  } catch {
+    showToast('Connection error', 'error');
+  }
+}
+
+async function rejectClaim(claimId) {
+  try {
+    const res = await fetch(`/api/claims/${claimId}/reject`, { method: 'PUT' });
+    if (!res.ok) {
+      showToast('Failed to reject claim', 'error');
+      return;
+    }
+    showToast('Claim rejected', 'success');
+    await loadClaims();
+  } catch {
+    showToast('Connection error', 'error');
+  }
+}
+
+
+function getBadgeHTML(status) {
+    const statusMap = {
+        found: 'blue',
+        lost: 'orange',
+        claimed: 'purple',
+        returned: 'green',
+        archived: 'grey'
+    };
+    const color = statusMap[status.toLowerCase()] || 'grey';
+    return `<span class="badge badge-${color}">${escapeHtml(status)}</span>`;
 }
 
 function escapeHtml(str) {

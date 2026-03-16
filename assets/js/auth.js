@@ -1,3 +1,4 @@
+// assets/js/auth.js
 window.addEventListener('DOMContentLoaded', async () => {
   try {
     const res = await fetch('/api/me');

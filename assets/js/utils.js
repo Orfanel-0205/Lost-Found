@@ -1,3 +1,4 @@
+// assets/js/utils.js
 /* ═══════════════════════════════════════════════
    UNIFIND – Shared Utilities
    Loaded by every page. No page-specific logic here.

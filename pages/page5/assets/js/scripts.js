@@ -1,78 +1,153 @@
 /* ═══════════════════════════════════════════════
-   UNIFIND – My Claims Page (page5)
+   UNIFIND – Claims Page Logic
+   Supports:
+   - claim submission page
+   - claim history page
    ═══════════════════════════════════════════════ */
 
-let allClaims  = [];
+let allClaims = [];
 let activeFilter = 'all';
 
-// ─── INIT ──────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', async () => {
-  // checkAuth() is safe – it won't crash on missing elements
   await checkAuth();
-  await loadMyClaims();
+
+  const statementForm = document.getElementById('statement-form');
+  const claimsList = document.getElementById('claimsList');
+
+  if (statementForm) {
+    statementForm.addEventListener('submit', submitClaimForm);
+  }
+
+  if (claimsList) {
+    await loadMyClaims();
+  }
 });
 
-// ─── LOAD DATA ─────────────────────────────────────────────────────────────
+/* =========================
+   CLAIM SUBMISSION
+========================= */
+async function submitClaimForm(e) {
+  e.preventDefault();
+
+  const description = document.getElementById('description').value.trim();
+  const image = document.getElementById('image').files[0];
+  const submitButton = document.querySelector('.btn-submit');
+
+  if (!description || !image) {
+    showToast('Please complete the statement and upload an image.', 'error');
+    return;
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const itemId = urlParams.get('itemId');
+
+  const formData = new FormData();
+  formData.append('description', description);
+  formData.append('image', image);
+  if (itemId) {
+    formData.append('itemId', itemId);
+  }
+
+  submitButton.disabled = true;
+  submitButton.textContent = 'Submitting...';
+
+  try {
+    const res = await fetch('/api/claims', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      showToast(data.error || 'Failed to submit claim.', 'error');
+      return;
+    }
+
+    showToast('Claim submitted successfully!', 'success');
+
+    setTimeout(() => {
+      window.location.href = '../Admin/dashboard.html?tab=claims';
+    }, 1000);
+
+  } catch (err) {
+    console.error(err);
+    showToast('An error occurred while submitting your claim.', 'error');
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = 'Submit Claim';
+  }
+}
+
+/* =========================
+   LOAD CLAIM HISTORY
+========================= */
 async function loadMyClaims() {
   const list = document.getElementById('claimsList');
+  if (!list) return;
+
   list.innerHTML = spinnerHTML();
 
   try {
     const res = await fetch('/api/my-claims');
+    const data = await res.json();
+
     if (!res.ok) {
-      showToast('Failed to load claims.', 'error');
+      showToast(data.error || 'Failed to load claims.', 'error');
       list.innerHTML = emptyHTML('⚠️', 'Could not load your claims.', 'Please refresh the page.');
       return;
     }
-    allClaims = await res.json();
+
+    allClaims = data;
     renderClaims();
-  } catch {
-    showToast('Connection error – is the server running?', 'error');
-    list.innerHTML = emptyHTML('🔌', 'Connection error.', 'Make sure the server is running.');
+  } catch (err) {
+    console.error(err);
+    list.innerHTML = emptyHTML('🔌', 'Connection error.', 'Please check if the server is running.');
   }
 }
 
-// ─── FILTER ────────────────────────────────────────────────────────────────
 function filterClaims(filter, el) {
   activeFilter = filter;
-  document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
+
+  document.querySelectorAll('.section-tab').forEach(tab => {
+    tab.classList.remove('active');
+  });
+
+  if (el) el.classList.add('active');
+
   renderClaims();
 }
 
-// ─── RENDER ────────────────────────────────────────────────────────────────
 function renderClaims() {
-  const list     = document.getElementById('claimsList');
+  const list = document.getElementById('claimsList');
+  if (!list) return;
+
   const filtered = activeFilter === 'all'
     ? allClaims
-    : allClaims.filter(c => c.ClaimStatus === activeFilter);
+    : allClaims.filter(claim => claim.ClaimStatus === activeFilter);
 
   if (filtered.length === 0) {
-    const msg = activeFilter === 'all'
-      ? "You haven't submitted any claims yet."
-      : `No ${activeFilter} claims at the moment.`;
-
     list.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-inner">
           <div class="empty-icon"><i class="fa-solid fa-inbox"></i></div>
-          <h3>${activeFilter === 'all' ? 'No claims yet' : `No ${activeFilter} claims`}</h3>
-          <p>${msg}</p>
+          <h3>No claims found</h3>
+          <p>You do not have any ${activeFilter === 'all' ? '' : activeFilter + ' '}claims yet.</p>
           <a href="../page4/home.html" class="browse-btn">
             <i class="fa-solid fa-box-open"></i> Browse Items
           </a>
         </div>
-      </div>`;
+      </div>
+    `;
     return;
   }
 
-  list.innerHTML = filtered.map((claim, i) => {
+  list.innerHTML = filtered.map((claim, index) => {
     const status = claim.ClaimStatus || 'pending';
-    const si     = statusInfo(status);
+    const info = statusInfo(status);
 
     return `
-      <div class="claim-card" style="animation:fadeUp .35s ease both;animation-delay:${i * 0.07}s">
-
+      <div class="claim-card" style="animation:fadeUp .35s ease both; animation-delay:${index * 0.06}s;">
         <div class="claim-card-top">
           <div class="claim-image">
             ${claim.ThumbnailPath
@@ -86,44 +161,39 @@ function renderClaims() {
               ${claim.ItemColor
                 ? `<span><i class="fa-solid fa-palette"></i>${escapeHtml(claim.ItemColor)}</span>`
                 : ''}
-              <span>
-                <i class="fa-solid fa-calendar-days"></i>
-                Submitted ${formatDate(claim.ClaimDate)}
-              </span>
-              <span>
-                <i class="fa-solid fa-tag"></i>
-                Item status: <strong>${capitalize(claim.ItemStatus || '—')}</strong>
-              </span>
+              <span><i class="fa-solid fa-calendar-days"></i> Submitted ${formatDate(claim.ClaimDate)}</span>
+              <span><i class="fa-solid fa-tag"></i> Item status: <strong>${capitalize(claim.ItemStatus)}</strong></span>
             </div>
           </div>
         </div>
 
-        ${claim.ProofDescription ? `
-          <div class="claim-card-body">
-            <div class="claim-proof">
-              <div class="claim-proof-title">Your Proof of Ownership</div>
-              <p>${escapeHtml(truncate(claim.ProofDescription, 180))}</p>
-            </div>
-          </div>` : ''}
+        <div class="claim-card-body">
+          <div class="claim-proof">
+            <div class="claim-proof-title">Your Proof of Ownership</div>
+            <p>${escapeHtml(truncate(claim.ProofDescription, 200))}</p>
+          </div>
+        </div>
 
         <div class="claim-card-footer">
           <div class="claim-date">${formatDate(claim.ClaimDate)}</div>
           <span class="status-badge status-${status}">
-            ${si.icon} ${si.label}
+            ${info.icon} ${info.label}
           </span>
         </div>
-
-      </div>`;
+      </div>
+    `;
   }).join('');
 }
 
-// ─── HELPERS ───────────────────────────────────────────────────────────────
+/* =========================
+   HELPERS
+========================= */
 function statusInfo(status) {
   return {
-    pending:  { icon: '⏳', label: 'Pending'  },
+    pending:  { icon: '⏳', label: 'Pending' },
     approved: { icon: '✅', label: 'Approved' },
-    rejected: { icon: '❌', label: 'Rejected' },
-  }[status] ?? { icon: '•', label: status };
+    rejected: { icon: '❌', label: 'Rejected' }
+  }[status] || { icon: '•', label: status };
 }
 
 function capitalize(str) {
@@ -137,8 +207,11 @@ function truncate(str, len) {
 }
 
 function spinnerHTML() {
-  return `<div style="grid-column:1/-1;display:flex;justify-content:center;padding:70px 0">
-    <div class="loading-spinner"></div></div>`;
+  return `
+    <div style="grid-column:1/-1;display:flex;justify-content:center;padding:70px 0">
+      <div class="loading-spinner"></div>
+    </div>
+  `;
 }
 
 function emptyHTML(icon, title, sub) {
@@ -149,18 +222,6 @@ function emptyHTML(icon, title, sub) {
         <h3>${title}</h3>
         <p>${sub}</p>
       </div>
-    </div>`;
+    </div>
+  `;
 }
-
-// Inject fadeUp keyframe once
-(function () {
-  if (document.getElementById('__keyFadeUp')) return;
-  const s = document.createElement('style');
-  s.id = '__keyFadeUp';
-  s.textContent = `
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0);    }
-    }`;
-  document.head.appendChild(s);
-}());

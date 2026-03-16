@@ -38,7 +38,7 @@ const upload = multer({
 });
 
 /* =========================
-   DATABASE POOL (XAMPP)
+   DATABASE POOL
 ========================= */
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
@@ -66,14 +66,72 @@ async function testDatabaseConnection() {
 }
 
 /* =========================
+   DATABASE INITIALIZATION
+========================= */
+async function initializeDatabase() {
+  try {
+    const connection = await pool.getConnection();
+    console.log('Running database schema checks...');
+
+    // ITEMS TABLE
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS items (
+        ItemID INT AUTO_INCREMENT PRIMARY KEY,
+        ItemName VARCHAR(255) NOT NULL,
+        ItemType VARCHAR(255),
+        ItemColor VARCHAR(255),
+        ItemQuantity INT DEFAULT 1,
+        Location VARCHAR(255),
+        Description TEXT,
+        Status VARCHAR(50) NOT NULL DEFAULT 'pending',
+        ReportType VARCHAR(50) NOT NULL,
+        ReportedBy INT NOT NULL,
+        DateReported DATE,
+        CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (ReportedBy) REFERENCES users(UserID) ON DELETE CASCADE
+      )
+    `);
+
+    // ITEM IMAGES TABLE
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS item_images (
+        ItemImageID INT AUTO_INCREMENT PRIMARY KEY,
+        ItemID INT NOT NULL,
+        ImagePath VARCHAR(255) NOT NULL,
+        FOREIGN KEY (ItemID) REFERENCES items(ItemID) ON DELETE CASCADE
+      )
+    `);
+
+    // CLAIMS TABLE
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS claims (
+        ClaimID INT AUTO_INCREMENT PRIMARY KEY,
+        ItemID INT NOT NULL,
+        UserID INT NOT NULL,
+        description TEXT NOT NULL,
+        ImagePath VARCHAR(255) NOT NULL,
+        Status VARCHAR(50) NOT NULL DEFAULT 'pending',
+        CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (ItemID) REFERENCES items(ItemID) ON DELETE CASCADE,
+        FOREIGN KEY (UserID) REFERENCES users(UserID) ON DELETE CASCADE
+      )
+    `);
+
+    console.log('Database schema is up to date.');
+    connection.release();
+  } catch (err) {
+    console.error('Error during database initialization:', err.message);
+    process.exit(1);
+  }
+}
+
+/* =========================
    MIDDLEWARE
 ========================= */
-// Homepage route
 app.get(['/', '/index.html'], (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'index.html'));
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
-// Serve static assets from 'assets' and 'pages' directories
 app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
 app.use('/pages', express.static(path.join(__dirname, '..', 'pages')));
 
@@ -253,9 +311,10 @@ app.get('/api/items', async (req, res) => {
         OR i.Description LIKE ?
         OR i.ItemColor LIKE ?
         OR i.Location LIKE ?
+        OR i.ItemType LIKE ?
       )
     `;
-    params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
   }
 
   if (status) {
@@ -407,161 +466,195 @@ app.delete('/api/items/:id', requireStaff, async (req, res) => {
 });
 
 /* =========================
-   Claim rOutes
+   CLAIM ROUTES
 ========================= */
-app.post('/api/claims', requireLogin, upload.single('proofImage'), async (req, res) => {
-  const { itemId, proofDescription } = req.body;
 
-  if (!itemId) {
-    return res.status(400).json({ error: 'Item ID required' });
+// Submit claim
+app.post('/api/claims', requireLogin, upload.single('image'), async (req, res) => {
+  const { description, itemId } = req.body;
+  const imagePath = req.file ? '/uploads/' + req.file.filename : null;
+
+  if (!description || !description.trim() || !imagePath) {
+    return res.status(400).json({
+      error: 'Description and proof image are required'
+    });
   }
 
   try {
-    const [existingPending] = await pool.query(
-      `SELECT ClaimID
-       FROM claims
-       WHERE UserID = ? AND ItemID = ? AND ClaimStatus = 'pending'`,
-      [req.session.user.id, itemId]
-    );
+    if (itemId) {
+      const [itemRows] = await pool.query(
+        'SELECT ItemID, Status FROM items WHERE ItemID = ?',
+        [itemId]
+      );
 
-    if (existingPending.length > 0) {
-      return res.status(400).json({ error: 'You already have a pending claim for this item' });
-    }
+      if (itemRows.length === 0) {
+        return res.status(404).json({ error: 'Item not found' });
+      }
 
-    const proofImagePath = req.file ? '/uploads/' + req.file.filename : null;
+      const [existingClaim] = await pool.query(
+        `SELECT ClaimID
+         FROM claims
+         WHERE ItemID = ? AND UserID = ? AND Status = 'pending'`,
+        [itemId, req.session.user.id]
+      );
 
-    await pool.query(
-      `INSERT INTO claims (UserID, ItemID, ProofDescription, ProofImagePath)
-       VALUES (?, ?, ?, ?)`,
-      [req.session.user.id, itemId, proofDescription || null, proofImagePath]
-    );
-
-    await pool.query(
-      `UPDATE items
-       SET Status = 'claimed'
-       WHERE ItemID = ? AND Status = 'found'`,
-      [itemId]
-    );
-
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.get('/api/claims', requireStaff, async (req, res) => {
-  try {
-    const [rows] = await pool.query(
-      `SELECT
-         c.*,
-         u.FName,
-         u.LName,
-         u.Email,
-         u.StudentID,
-         i.ItemName,
-         i.ItemColor,
-         i.Description AS ItemDescription,
-         i.Status      AS ItemStatus,
-         (
-           SELECT ImagePath
-           FROM item_images
-           WHERE ItemID = i.ItemID
-           LIMIT 1
-         ) AS ThumbnailPath
-       FROM claims c
-       JOIN users u ON c.UserID = u.UserID
-       JOIN items i ON c.ItemID = i.ItemID
-       ORDER BY c.ClaimDate DESC`
-    );
-
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.get('/api/my-claims', requireLogin, async (req, res) => {
-  try {
-    const [rows] = await pool.query(
-      `SELECT
-         c.*,
-         i.ItemName,
-         i.ItemColor,
-         i.Status AS ItemStatus,
-         (
-           SELECT ImagePath
-           FROM item_images
-           WHERE ItemID = i.ItemID
-           LIMIT 1
-         ) AS ThumbnailPath
-       FROM claims c
-       JOIN items i ON c.ItemID = i.ItemID
-       WHERE c.UserID = ?
-       ORDER BY c.ClaimDate DESC`,
-      [req.session.user.id]
-    );
-
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.put('/api/claims/:id', requireStaff, async (req, res) => {
-  const { status } = req.body;
-
-  if (!['approved', 'rejected'].includes(status)) {
-    return res.status(400).json({ error: 'Invalid status' });
-  }
-
-  try {
-    await pool.query(
-      `UPDATE claims
-       SET ClaimStatus = ?, ReviewedBy = ?, ReviewedAt = NOW()
-       WHERE ClaimID = ?`,
-      [status, req.session.user.id, req.params.id]
-    );
-
-    const [claimRows] = await pool.query(
-      'SELECT ItemID FROM claims WHERE ClaimID = ?',
-      [req.params.id]
-    );
-
-    if (claimRows.length > 0) {
-      const itemId = claimRows[0].ItemID;
-
-      if (status === 'approved') {
-        await pool.query(
-          'UPDATE items SET Status = ? WHERE ItemID = ?',
-          ['returned', itemId]
-        );
-      } else if (status === 'rejected') {
-        const [pendingClaims] = await pool.query(
-          `SELECT COUNT(*) AS count
-           FROM claims
-           WHERE ItemID = ? AND ClaimStatus = 'pending'`,
-          [itemId]
-        );
-
-        if (pendingClaims[0].count === 0) {
-          await pool.query(
-            `UPDATE items
-             SET Status = 'found'
-             WHERE ItemID = ? AND ReportType = 'found'`,
-            [itemId]
-          );
-        }
+      if (existingClaim.length > 0) {
+        return res.status(400).json({
+          error: 'You already have a pending claim for this item'
+        });
       }
     }
 
-    res.json({ success: true });
+    const effectiveItemId = itemId || null;
+    const [result] = await pool.query(
+      `INSERT INTO claims (ItemID, UserID, description, ImagePath)
+       VALUES (?, ?, ?, ?)`,
+      [effectiveItemId, req.session.user.id, description.trim(), imagePath]
+    );
+
+    res.json({
+      success: true,
+      message: 'Claim submitted successfully',
+      claimId: result.insertId
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Student: view own claims
+app.get('/api/my-claims', requireLogin, async (req, res) => {
+  try {
+    const [claims] = await pool.query(`
+      SELECT
+        c.ClaimID,
+        c.description AS ProofDescription,
+        c.ImagePath AS ClaimImagePath,
+        c.Status AS ClaimStatus,
+        c.CreatedAt AS ClaimDate,
+        i.ItemID,
+        i.ItemName,
+        i.ItemColor,
+        i.ItemType,
+        i.Status AS ItemStatus,
+        (
+          SELECT ImagePath
+          FROM item_images
+          WHERE ItemID = i.ItemID
+          LIMIT 1
+        ) AS ThumbnailPath
+      FROM claims c
+      JOIN items i ON c.ItemID = i.ItemID
+      WHERE c.UserID = ?
+      ORDER BY c.CreatedAt DESC
+    `, [req.session.user.id]);
+
+    res.json(claims);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Staff: view all claims
+app.get('/api/claims/all', requireStaff, async (req, res) => {
+  try {
+    const [claims] = await pool.query(`
+      SELECT
+        c.ClaimID,
+        c.ItemID,
+        c.description AS ClaimDescription,
+        c.ImagePath AS ClaimImagePath,
+        c.Status AS ClaimStatus,
+        c.CreatedAt AS ClaimDate,
+        i.ItemName,
+        i.ItemType,
+        i.ItemColor,
+        i.Description AS ItemDescription,
+        i.Status AS ItemStatus,
+        (
+          SELECT ImagePath
+          FROM item_images
+          WHERE ItemID = i.ItemID
+          LIMIT 1
+        ) AS ItemThumbnail,
+        u.FName,
+        u.LName,
+        u.Email,
+        u.StudentID,
+        u.ContactNo
+      FROM claims c
+      LEFT JOIN items i ON c.ItemID = i.ItemID
+      JOIN users u ON c.UserID = u.UserID
+      ORDER BY c.CreatedAt DESC
+    `);
+
+    res.json(claims);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Staff: approve claim
+app.put('/api/claims/:id/approve', requireStaff, async (req, res) => {
+  const claimId = req.params.id;
+
+  try {
+    const [claimRows] = await pool.query(
+      'SELECT ClaimID, ItemID FROM claims WHERE ClaimID = ?',
+      [claimId]
+    );
+
+    if (claimRows.length === 0) {
+      return res.status(404).json({ error: 'Claim not found' });
+    }
+
+    const itemId = claimRows[0].ItemID;
+
+    await pool.query(
+      `UPDATE claims SET Status = 'approved' WHERE ClaimID = ?`,
+      [claimId]
+    );
+
+    if (itemId) {
+      await pool.query(
+        `UPDATE items SET Status = 'pickup_ready' WHERE ItemID = ?`,
+        [itemId]
+      );
+    }
+
+    res.json({ success: true, message: 'Claim approved successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Staff: reject claim
+app.put('/api/claims/:id/reject', requireStaff, async (req, res) => {
+  const claimId = req.params.id;
+
+  try {
+    const [claimRows] = await pool.query(
+      'SELECT ClaimID FROM claims WHERE ClaimID = ?',
+      [claimId]
+    );
+
+    if (claimRows.length === 0) {
+      return res.status(404).json({ error: 'Claim not found' });
+    }
+
+    await pool.query(
+      `UPDATE claims SET Status = 'rejected' WHERE ClaimID = ?`,
+      [claimId]
+    );
+
+    res.json({ success: true, message: 'Claim rejected successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 /* =========================
-  Dashboard Statistic ROUtes
+   DASHBOARD STATISTICS
 ========================= */
 app.get('/api/dashboard-stats', requireStaff, async (req, res) => {
   try {
@@ -577,9 +670,6 @@ app.get('/api/dashboard-stats', requireStaff, async (req, res) => {
     const [[returned]] = await pool.query(
       `SELECT COUNT(*) AS count FROM items WHERE Status = 'returned'`
     );
-    const [[pending]] = await pool.query(
-      `SELECT COUNT(*) AS count FROM claims WHERE ClaimStatus = 'pending'`
-    );
     const [[total]] = await pool.query(
       `SELECT COUNT(*) AS count FROM items`
     );
@@ -589,7 +679,6 @@ app.get('/api/dashboard-stats', requireStaff, async (req, res) => {
       lost: lost.count,
       claimed: claimed.count,
       returned: returned.count,
-      pending: pending.count,
       total: total.count
     });
   } catch (err) {
@@ -598,10 +687,11 @@ app.get('/api/dashboard-stats', requireStaff, async (req, res) => {
 });
 
 /* =========================
-   TO START SERVER
+   START SERVER
 ========================= */
 async function startServer() {
   await testDatabaseConnection();
+  await initializeDatabase();
 
   app.listen(PORT, () => {
     console.log(`FEU Lost & Found Server running at http://localhost:${PORT}`);
@@ -609,9 +699,3 @@ async function startServer() {
 }
 
 startServer();
-
-app.post('/api/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.json({ success: true });
-  });
-});
